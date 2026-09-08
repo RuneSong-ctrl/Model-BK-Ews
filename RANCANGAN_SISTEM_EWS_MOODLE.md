@@ -1,11 +1,11 @@
 # Spesifikasi Teknis Sistem EWS Moodle 2-Tier
-Dokumen arsitektur, spesifikasi API JSON, dan pembagian kerja tim pengembang.
+Dokumen arsitektur, spesifikasi API JSON lengkap (24 Fitur), dan pembagian kerja tim pengembang.
 
 ---
 
 ## 1. Arsitektur Sistem 2-Tier
 
-Sistem Early Warning System (EWS) membagi deteksi risiko siswa menjadi dua tingkatan:
+Sistem Early Warning System (EWS) membagi deteksi risiko akademik siswa menjadi dua tingkatan:
 
 ```
                          [ Moodle LMS ]
@@ -51,7 +51,7 @@ Kamus data eksternal untuk menghubungkan ID kursus teknis Moodle dengan struktur
 
 ## 3. Spesifikasi Kebutuhan Web Dashboard
 
-Aplikasi web berfungsi mengonsumsi payload JSON dari model ML dan menyajikan data sesuai peran pengguna.
+Aplikasi web mengonsumsi payload JSON dari model ML dan menyajikan data sesuai peran pengguna.
 
 ### 3.1 Antarmuka Guru Mata Pelajaran
 - **Filter Kelas & Mapel**: Menampilkan kelas yang diampu guru yang sedang login.
@@ -60,19 +60,19 @@ Aplikasi web berfungsi mengonsumsi payload JSON dari model ML dan menyajikan dat
   - Rata-rata durasi belajar siswa pada kursus tersebut (dalam jam).
 - **Tabel Monitoring Siswa**:
   - Kolom: ID Siswa, Nama Siswa, Skor Risiko, Durasi Belajar (Jam), Percobaan Lesson (Attempts), Rata-rata Nilai Lesson, Tugas Terlewat, Rekomendasi Tindakan.
-- **Rincian Tugas & Lesson**:
-  - Menampilkan daftar tugas yang terlewat dari batas waktu dan aktivitas lesson yang belum dikerjakan.
+- **Panel Rincian 24 Fitur**:
+  - Menampilkan metrik lengkap: engagement, kepatuhan tugas, lesson, dan tren nilai.
 
 ### 3.2 Antarmuka Guru Bimbingan Konseling (BK)
 - **Tabel Rekapitulasi Karakter Belajar**:
   - Menampilkan daftar siswa yang terindikasi kendala di minimal satu mata pelajaran.
   - Kolom: ID Siswa, Nama Siswa, Total Mapel Diambil, Jumlah Mapel Bermasalah, Inaktivitas Terlama (Hari), Diagnosis Karakter Belajar, Tingkat Prioritas, Aksi.
 - **Penyaring Prioritas Konseling**:
-  - Filter `Prioritas Tinggi`: Siswa dengan status merah pada $\ge 2$ mata pelajaran.
-  - Filter `Inaktif Kritis`: Siswa inaktif dari seluruh sistem $> 14$ hari.
+  - Filter `Prioritas Tinggi`: Siswa dengan status merah pada >= 2 mata pelajaran.
+  - Filter `Inaktif Kritis`: Siswa inaktif dari seluruh sistem > 14 hari.
   - Filter `Kendala Spesifik`: Siswa dengan masalah hanya pada 1 mata pelajaran.
 - **Profil Detail Siswa**:
-  - Matriks perbandingan performa di semua mata pelajaran (menampilkan status risiko dan catatan tugas per mata pelajaran).
+  - Matriks perbandingan performa di semua mata pelajaran (status risiko dan catatan tugas per mata pelajaran).
 - **Jurnal Tindak Lanjut Konseling**:
   - Form pencatatan hasil konseling: tanggal pemanggilan, catatan kendala siswa, rencana tindak lanjut, dan status penanganan.
 
@@ -85,35 +85,35 @@ Aplikasi web berfungsi mengonsumsi payload JSON dari model ML dan menyajikan dat
 ## 4. Pembagian Kerja Tim Pengembang (2 Orang)
 
 ### Pengembang 1: Machine Learning & Data Pipeline
-1. **Pipeline Data & Ekstraksi Fitur**:
-   - Memproses data log Moodle dengan batasan *cut-off day 60*.
-   - Mengekstrak 24 fitur (termasuk `course_duration_hours`, `lesson_attempts_count`, `lesson_time_spent_min`, dan `lesson_completion_ratio`).
+1. **Pipeline Data & Ekstraksi 24 Fitur**:
+   - Memproses log Moodle dengan batasan cut-off day 60.
+   - Mengekstrak 24 fitur (engagement, disiplin tugas, aktivitas lesson, akademik, dan konteks siswa).
 2. **Pelatihan & Kalibrasi Model**:
    - Melatih model Random Forest terkalibrasi (`CalibratedClassifierCV`) dengan 5-fold Stratified CV.
-   - Mengoptimalkan threshold klasifikasi ke 0.40 (memastikan Recall $\ge 81\%$).
-   - Menyimpan bobot model ke `ews_moodle_model.pkl`.
+   - Threshold klasifikasi optimal 0.40 (Recall >= 81%).
+   - Menyimpan model ke `ews_moodle_model.pkl`.
 3. **Query Ingestion Database Moodle**:
    - Menyusun query SQL ekstraksi tabel produksi Moodle: `mdl_lesson_attempts`, `mdl_lesson_timer`, `mdl_logstore_standard_log`, `mdl_assign_submission`, dan `mdl_grade_grades`.
 4. **Modul Inferensi API**:
-   - Menyediakan fungsi Python murni untuk menghasilkan output JSON Tier 1 dan Tier 2.
+   - Menyediakan fungsi Python murni untuk menghasilkan output JSON Tier 1 (24 fitur) dan Tier 2 (agregasi holistik).
 
 ### Pengembang 2: LLM Service, API Backend & Web Application
 1. **Generator Narasi Berbasis LLM (Opsional / Terpisah)**:
-   - Membuat service pemanggil LLM (Groq API / Ollama lokal) yang menerima payload JSON dari Pengembang 1 untuk menghasilkan narasi laporan otomatis saat dibutuhkan.
+   - Membuat service pemanggil LLM (Groq API / Ollama lokal) yang menerima payload JSON 24 fitur untuk menghasilkan ringkasan laporan otomatis jika diminta pengguna.
 2. **Backend REST API**:
    - Membangun endpoint API (FastAPI / Express / Laravel) untuk melayani data ke frontend web dashboard.
 3. **Frontend Web Dashboard**:
-   - Mengembangkan halaman web untuk Guru Mapel, Guru BK, dan Admin.
+   - Mengembangkan halaman antarmuka web untuk Guru Mapel, Guru BK, dan Admin.
 4. **Database Aplikasi**:
    - Merancang skema tabel untuk riwayat inferensi, pengguna, dan jurnal konseling.
 
 ---
 
-## 5. Kontrak Data Output JSON (Spesifikasi API)
-
-Seluruh output model disajikan dalam format JSON murni tanpa template teks chat:
+## 5. Kontrak Data Output JSON (Spesifikasi Lengkap 24 Fitur)
 
 ### 5.1 Endpoint Tier 1: Guru Mata Pelajaran (`generate_subject_teacher_payload`)
+Payload memuat seluruh 24 fitur yang digunakan model dalam klasifikasi:
+
 ```json
 {
   "target_audience": "GURU_MATA_PELAJARAN",
@@ -130,14 +130,41 @@ Seluruh output model disajikan dalam format JSON murni tanpa template teks chat:
     "probabilitas_risiko": 0.832,
     "threshold": 0.40
   },
-  "metrik_kinerja": {
-    "durasi_belajar_jam": 4.5,
-    "lesson_attempts": 0,
-    "rasio_ketuntasan_lesson": 0.0,
-    "nilai_rata_rata_lesson": 0.0,
-    "tugas_belum_dikumpul": 2,
-    "tugas_terlambat": 1,
-    "nilai_rata_rata_tugas": 38.0
+  "metrik_24_fitur_model": {
+    "engagement_dan_durasi": {
+      "total_clicks": 142,
+      "active_days": 8,
+      "days_inactive": 16,
+      "is_inactive_gt_5d": 1,
+      "is_inactive_gt_14d": 1,
+      "clicks_per_active_day": 17.75,
+      "clicks_last_14d_ratio": 0.05,
+      "unique_sites_accessed": 12,
+      "course_duration_hours": 4.5
+    },
+    "kepatuhan_tugas": {
+      "missing_assignments": 2,
+      "late_submission_count": 1,
+      "avg_submission_gap": 2.5,
+      "procrastination_count": 1
+    },
+    "aktivitas_lesson": {
+      "lesson_attempts_count": 0,
+      "lesson_time_spent_min": 0.0,
+      "lesson_completion_ratio": 0.0,
+      "lesson_avg_score": 0.0
+    },
+    "akademik": {
+      "avg_score": 38.0,
+      "min_score": 30.0,
+      "score_rel_to_module": -18.5,
+      "failing_tasks_count": 2,
+      "grade_trend": -15.0
+    },
+    "konteks_siswa": {
+      "num_of_prev_attempts": 0,
+      "studied_credits": 60
+    }
   },
   "faktor_pemicu": [
     "2 tugas belum dikumpulkan.",
@@ -158,6 +185,7 @@ Seluruh output model disajikan dalam format JSON murni tanpa template teks chat:
     "total_mapel_berisiko": 2,
     "total_jam_belajar": 8.2,
     "total_tugas_belum_dikumpul": 4,
+    "total_tugas_terlambat": 2,
     "inaktivitas_terlama_hari": 16
   },
   "profil_karakter_belajar": "Prokrastinasi Sistemik (Keterlambatan dan kelalaian tugas di banyak mapel).",
@@ -172,7 +200,10 @@ Seluruh output model disajikan dalam format JSON murni tanpa template teks chat:
       "probabilitas": 0.832,
       "status_risiko": "MERAH",
       "tugas_belum_dikumpul": 2,
-      "durasi_belajar_jam": 4.5
+      "durasi_belajar_jam": 4.5,
+      "lesson_attempts": 0,
+      "days_inactive": 16,
+      "avg_score": 38.0
     },
     {
       "kode_modul": "BBB",
@@ -182,7 +213,10 @@ Seluruh output model disajikan dalam format JSON murni tanpa template teks chat:
       "probabilitas": 0.764,
       "status_risiko": "MERAH",
       "tugas_belum_dikumpul": 2,
-      "durasi_belajar_jam": 3.7
+      "durasi_belajar_jam": 3.7,
+      "lesson_attempts": 1,
+      "days_inactive": 12,
+      "avg_score": 42.0
     }
   ]
 }
