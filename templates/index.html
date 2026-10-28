@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EWS Moodle - Model Sandbox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-page: #f8f9fa;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f1f2f5;
+      --bg-muted: #e4e6ea;
+      --border-hairline: #e2e4e9;
+      --border-focus: #111827;
+      
+      --text-main: #111827;
+      --text-secondary: #4b5563;
+      --text-dim: #9ca3af;
+      
+      --accent-black: #000000;
+      --accent-white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.5;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 3rem;
+    }
+
+    /* Minimalist Monochromatic Header */
+    header {
+      border-bottom: 1px solid var(--border-hairline);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      padding: 0.9rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--accent-black);
+      border-radius: 50%;
+    }
+
+    .brand-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text-main);
+    }
+
+    .brand-separator {
+      color: var(--text-dim);
+      font-size: 0.75rem;
+    }
+
+    .brand-sub {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+
+
+
+    /* Main Grid */
+    .container {
+      max-width: 1400px;
+      margin: 1.5rem auto 0;
+      padding: 0 1.5rem;
+      display: grid;
+      grid-template-columns: 310px 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    /* Sidebar Components */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: sticky;
+      top: 4.5rem;
+    }
+
+    .panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: 8px;
+      padding: 1.2rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .panel-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin-bottom: 0.85rem;
+    }
+
+    /* Preset list */
+    .preset-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .preset-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-secondary);
+      padding: 0.6rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 500;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .preset-btn:hover {
+      background: var(--bg-subtle);
+      color: var(--text-main);
+    }
+
+    .preset-btn.active {
+      background: var(--accent-black);
+      border-color: var(--accent-black);
+      color: var(--accent-white);
+      font-weight: 600;
+    }
+
+    .preset-status {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      opacity: 0.7;
+    }
+
+    /* Monochromatic Precision Gauge */
+    .gauge-wrapper {
+      padding: 0.75rem 0 0.5rem;
+      text-align: center;
+    }
+
+    .gauge-svg-container {
+      position: relative;
+      width: 140px;
+      height: 140px;
+      margin: 0 auto 0.75rem;
+    }
+
+    .gauge-svg-container svg {
+      width: 140px;
+      height: 140px;
+      transform: rotate(-90deg);
+    }
+
+    .gauge-bg {
+      fill: none;
+      stroke: var(--bg-muted);
+      stroke-width: 6;
+    }
+
+    .gauge-fill {
+      fill: none;
+      stroke: var(--accent-black);
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-dasharray: 377; /* 2 * PI * 60 */
+      stroke-dashoffset: 377;
+      transition: stroke-dashoffset 0.3s ease;
+    }
+
+    .gauge-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .gauge-value {
+      font-size: 1.85rem;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-main);
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .gauge-sub {
+      font-size: 0.62rem;
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin-top: 0.35rem;
+    }
+
+    .risk-tag {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-family: 'JetBrains Mono', monospace;
+      border: 1px solid var(--border-hairline);
+      background: var(--bg-subtle);
+      color: var(--text-main);
+    }
+
+    /* Evaluasi / Triggers */
+    .eval-box {
+      margin-top: 1rem;
+      border-top: 1px solid var(--border-hairline);
+      padding-top: 0.85rem;
+    }
+
+    .eval-title {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin-bottom: 0.5rem;
+    }
+
+    .eval-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .eval-list li {
+      font-size: 0.76rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      display: flex;
+      align-items: baseline;
+      gap: 0.45rem;
+    }
+
+    .eval-list li::before {
+      content: "–";
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Main Content Area */
+    .main-area {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .feature-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: 8px;
+      padding: 1.2rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .feature-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.45rem;
+      border-bottom: 1px solid var(--border-hairline);
+    }
+
+    .feature-card-header h3 {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-main);
+      letter-spacing: -0.01em;
+    }
+
+    .feature-card-header span.count {
+      font-size: 0.68rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-dim);
+    }
+
+    /* Monochromatic Slider Component */
+    .slider-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .slider-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .slider-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 0.76rem;
+    }
+
+    .slider-label {
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .slider-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 2px;
+      background: var(--bg-muted);
+      outline: none;
+      border-radius: 1px;
+      cursor: pointer;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: var(--accent-black);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    input[type=range]:hover::-webkit-slider-thumb {
+      transform: scale(1.2);
+    }
+
+    input[type=range]::-moz-range-thumb {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: var(--accent-black);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+    }
+
+    /* JSON Viewer */
+    .json-panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: 8px;
+      padding: 1.2rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .json-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.85rem;
+    }
+
+    .tab-group {
+      display: flex;
+      gap: 0.25rem;
+      background: var(--bg-subtle);
+      padding: 0.2rem;
+      border-radius: 6px;
+      border: 1px solid var(--border-hairline);
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.76rem;
+      font-weight: 500;
+      padding: 0.35rem 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn.active {
+      background: var(--bg-surface);
+      color: var(--text-main);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+      font-weight: 600;
+    }
+
+    .copy-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      color: var(--text-secondary);
+      font-size: 0.72rem;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 0.35rem 0.7rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .copy-btn:hover {
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      border-color: var(--border-focus);
+    }
+
+    pre.json-code {
+      background: #fafafa;
+      border: 1px solid var(--border-hairline);
+      border-radius: 6px;
+      padding: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      color: #1f2937;
+      overflow-x: auto;
+      max-height: 380px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 1024px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        position: static;
+      }
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <span class="brand-title">EWS Moodle</span>
+      <span class="brand-separator">/</span>
+      <span class="brand-sub">Model Sandbox</span>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="panel">
+        <div class="panel-label">Preset Profil</div>
+        <div class="preset-list" id="presetButtons"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-label">Prediksi Risiko</div>
+        <div class="gauge-wrapper">
+          <div class="gauge-svg-container">
+            <svg viewBox="0 0 140 140">
+              <circle class="gauge-bg" cx="70" cy="70" r="60"></circle>
+              <circle class="gauge-fill" id="gaugeFill" cx="70" cy="70" r="60"></circle>
+            </svg>
+            <div class="gauge-center">
+              <div class="gauge-value" id="gaugeText">0%</div>
+              <div class="gauge-sub">Probabilitas</div>
+            </div>
+          </div>
+          <div id="riskBadge" class="risk-tag">Aman</div>
+        </div>
+
+        <div class="eval-box">
+          <div class="eval-title">Faktor Evaluasi</div>
+          <ul class="eval-list" id="triggerList"></ul>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main-area">
+      <div class="features-grid">
+        <!-- 1. Engagement & Durasi Belajar -->
+        <div class="feature-card">
+          <div class="feature-card-header">
+            <h3>Engagement & Durasi</h3>
+            <span class="count">9 Fitur</span>
+          </div>
+          <div id="group-engagement"></div>
+        </div>
+
+        <!-- 2. Kepatuhan Tugas -->
+        <div class="feature-card">
+          <div class="feature-card-header">
+            <h3>Kepatuhan Tugas</h3>
+            <span class="count">4 Fitur</span>
+          </div>
+          <div id="group-tugas"></div>
+        </div>
+
+        <!-- 3. Aktivitas Lesson -->
+        <div class="feature-card">
+          <div class="feature-card-header">
+            <h3>Aktivitas Lesson</h3>
+            <span class="count">4 Fitur</span>
+          </div>
+          <div id="group-lesson"></div>
+        </div>
+
+        <!-- 4. Akademik & Konteks -->
+        <div class="feature-card">
+          <div class="feature-card-header">
+            <h3>Akademik & Konteks</h3>
+            <span class="count">7 Fitur</span>
+          </div>
+          <div id="group-akademik"></div>
+        </div>
+      </div>
+
+      <!-- JSON Inspection Section -->
+      <div class="json-panel">
+        <div class="json-header">
+          <div class="tab-group">
+            <button class="tab-btn active" onclick="switchJsonTab('tier1')">Tier 1: Guru Mapel</button>
+            <button class="tab-btn" onclick="switchJsonTab('tier2')">Tier 2: Guru BK</button>
+          </div>
+          <button class="copy-btn" id="copyBtn" onclick="copyJson()">Salin JSON</button>
+        </div>
+        <pre class="json-code" id="jsonOutput">Memuat data JSON...</pre>
+      </div>
+    </main>
+  </div>
+
+  <script id="presets-data" type="application/json">{{ presets_json | safe }}</script>
+  <script>
+    const presetsData = JSON.parse(document.getElementById('presets-data').textContent || '{}');
+    let currentFeatures = Object.assign({}, (presetsData['teladan_aman'] && presetsData['teladan_aman'].features) || {});
+    let currentTab = 'tier1';
+    let lastPayload = null;
+
+    const featureConfigs = {
+      // Engagement
+      total_clicks: { label: 'Total Klik LMS', group: 'engagement', min: 0, max: 2000, step: 10 },
+      active_days: { label: 'Hari Aktif Belajar', group: 'engagement', min: 0, max: 60, step: 1 },
+      days_inactive: { label: 'Inaktivitas Terakhir (Hari)', group: 'engagement', min: 0, max: 60, step: 1 },
+      is_inactive_gt_5d: { label: 'Inaktif > 5 Hari (1/0)', group: 'engagement', min: 0, max: 1, step: 1 },
+      is_inactive_gt_14d: { label: 'Inaktif > 14 Hari (1/0)', group: 'engagement', min: 0, max: 1, step: 1 },
+      clicks_per_active_day: { label: 'Rata-rata Klik / Hari', group: 'engagement', min: 0, max: 100, step: 0.5 },
+      clicks_last_14d_ratio: { label: 'Rasio Aktivitas 14 Hari Akhir', group: 'engagement', min: 0, max: 1, step: 0.01 },
+      unique_sites_accessed: { label: 'Halaman Unik Diakses', group: 'engagement', min: 0, max: 80, step: 1 },
+      course_duration_hours: { label: 'Durasi Belajar (Jam)', group: 'engagement', min: 0, max: 50, step: 0.5 },
+      
+      // Tugas
+      missing_assignments: { label: 'Tugas Belum Dikumpul', group: 'tugas', min: 0, max: 10, step: 1 },
+      late_submission_count: { label: 'Tugas Terlambat Kumpul', group: 'tugas', min: 0, max: 10, step: 1 },
+      avg_submission_gap: { label: 'Selisih Hari Deadline', group: 'tugas', min: -15, max: 15, step: 0.5 },
+      procrastination_count: { label: 'Pengumpulan Mepet (<24 Jam)', group: 'tugas', min: 0, max: 10, step: 1 },
+      
+      // Lesson
+      lesson_attempts_count: { label: 'Percobaan Lesson', group: 'lesson', min: 0, max: 15, step: 1 },
+      lesson_time_spent_min: { label: 'Durasi Lesson (Menit)', group: 'lesson', min: 0, max: 300, step: 5 },
+      lesson_completion_ratio: { label: 'Rasio Ketuntasan Lesson', group: 'lesson', min: 0, max: 1, step: 0.05 },
+      lesson_avg_score: { label: 'Rata-rata Nilai Lesson', group: 'lesson', min: 0, max: 100, step: 1 },
+      
+      // Akademik
+      avg_score: { label: 'Rata-rata Nilai Tugas', group: 'akademik', min: 0, max: 100, step: 0.5 },
+      min_score: { label: 'Nilai Tugas Terendah', group: 'akademik', min: 0, max: 100, step: 0.5 },
+      score_rel_to_module: { label: 'Deviasi Nilai Rata-rata Mapel', group: 'akademik', min: -50, max: 50, step: 1 },
+      failing_tasks_count: { label: 'Tugas di Bawah KKM (<40)', group: 'akademik', min: 0, max: 10, step: 1 },
+      grade_trend: { label: 'Tren Nilai (+ / -)', group: 'akademik', min: -50, max: 50, step: 1 },
+      num_of_prev_attempts: { label: 'Riwayat Remedial / Mengulang', group: 'akademik', min: 0, max: 5, step: 1 },
+      studied_credits: { label: 'Beban Jam Pelajaran (JP)', group: 'akademik', min: 30, max: 180, step: 10 }
+    };
+
+    function initUI() {
+      // Build preset buttons
+      const pContainer = document.getElementById('presetButtons');
+      Object.keys(presetsData).forEach((key, idx) => {
+        const p = presetsData[key];
+        const btn = document.createElement('button');
+        btn.className = `preset-btn ${idx === 0 ? 'active' : ''}`;
+        btn.innerHTML = `
+          <span>${p.label}</span>
+          <span class="preset-status"></span>
+        `;
+        btn.onclick = () => selectPreset(key, btn);
+        pContainer.appendChild(btn);
+      });
+
+      // Build sliders
+      Object.keys(featureConfigs).forEach(feat => {
+        const conf = featureConfigs[feat];
+        const initialVal = (currentFeatures[feat] !== undefined) ? currentFeatures[feat] : 0;
+        const container = document.getElementById(`group-${conf.group}`);
+        const div = document.createElement('div');
+        div.className = 'slider-row';
+        div.innerHTML = `
+          <div class="slider-meta">
+            <span class="slider-label">${conf.label}</span>
+            <span class="slider-val" id="val_${feat}">${initialVal}</span>
+          </div>
+          <input type="range" id="input_${feat}" min="${conf.min}" max="${conf.max}" step="${conf.step}" value="${initialVal}">
+        `;
+        container.appendChild(div);
+
+        const slider = div.querySelector('input');
+        slider.addEventListener('input', (e) => {
+          const val = parseFloat(e.target.value);
+          document.getElementById(`val_${feat}`).innerText = val;
+          currentFeatures[feat] = val;
+          
+          if (feat === 'days_inactive') {
+            currentFeatures['is_inactive_gt_5d'] = val > 5 ? 1 : 0;
+            currentFeatures['is_inactive_gt_14d'] = val > 14 ? 1 : 0;
+            updateSliderDisplay('is_inactive_gt_5d', currentFeatures['is_inactive_gt_5d']);
+            updateSliderDisplay('is_inactive_gt_14d', currentFeatures['is_inactive_gt_14d']);
+          }
+          debouncePredict();
+        });
+      });
+
+      requestPredict();
+    }
+
+    function updateSliderDisplay(key, val) {
+      const input = document.getElementById(`input_${key}`);
+      const valEl = document.getElementById(`val_${key}`);
+      if (input && valEl) {
+        input.value = val;
+        valEl.innerText = val;
+      }
+    }
+
+    function selectPreset(key, btn) {
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFeatures = Object.assign({}, presetsData[key].features);
+      Object.keys(currentFeatures).forEach(k => {
+        updateSliderDisplay(k, currentFeatures[k]);
+      });
+      requestPredict();
+    }
+
+    let debounceTimer;
+    function debouncePredict() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(requestPredict, 120);
+    }
+
+    async function requestPredict() {
+      try {
+        const resp = await fetch('/api/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ student_id: 28400, features: currentFeatures })
+        });
+        const data = await resp.json();
+        lastPayload = data;
+        updateDashboard(data);
+      } catch (err) {
+        console.error('Fetch error:', err);
+      }
+    }
+
+    function updateDashboard(data) {
+      const prob = data.probability;
+      const pct = Math.round(prob * 100);
+      document.getElementById('gaugeText').innerText = `${pct}%`;
+
+      // Arc radius 60 => circumference = 2 * PI * 60 ≈ 376.99
+      const fill = document.getElementById('gaugeFill');
+      const maxOffset = 377;
+      const offset = maxOffset - (prob * maxOffset);
+      fill.style.strokeDashoffset = offset;
+
+      const badge = document.getElementById('riskBadge');
+      if (data.risk_color === 'MERAH') {
+        badge.innerText = `Tinggi (${pct}%)`;
+      } else if (data.risk_color === 'KUNING') {
+        badge.innerText = `Waspada (${pct}%)`;
+      } else {
+        badge.innerText = `Aman (${pct}%)`;
+      }
+
+      // Triggers
+      const tList = document.getElementById('triggerList');
+      tList.innerHTML = '';
+      data.triggers.forEach(t => {
+        const li = document.createElement('li');
+        li.innerText = t;
+        tList.appendChild(li);
+      });
+
+      renderJsonTab();
+    }
+
+    function switchJsonTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach((b, i) => {
+        b.classList.toggle('active', (tab === 'tier1' && i === 0) || (tab === 'tier2' && i === 1));
+      });
+      renderJsonTab();
+    }
+
+    function renderJsonTab() {
+      if (!lastPayload) return;
+      const content = currentTab === 'tier1' ? lastPayload.tier1_payload : lastPayload.tier2_payload;
+      document.getElementById('jsonOutput').innerText = JSON.stringify(content, null, 2);
+    }
+
+    function copyJson() {
+      if (!lastPayload) return;
+      const content = currentTab === 'tier1' ? lastPayload.tier1_payload : lastPayload.tier2_payload;
+      navigator.clipboard.writeText(JSON.stringify(content, null, 2)).then(() => {
+        const btn = document.getElementById('copyBtn');
+        const orig = btn.innerText;
+        btn.innerText = 'Tersalin';
+        setTimeout(() => { btn.innerText = orig; }, 1200);
+      });
+    }
+
+    window.onload = initUI;
+  </script>
+</body>
+</html>
