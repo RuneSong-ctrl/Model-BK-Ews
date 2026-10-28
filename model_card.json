@@ -1,0 +1,46 @@
+{
+  "nama_model": "EWS Moodle 2-Tier (Random Forest terkalibrasi sigmoid)",
+  "versi": "1.0.0",
+  "tanggal_latih": "2026-09-08",
+  "berkas_model": "ews_moodle_model.pkl",
+  "dataset": "OULAD (Open University Learning Analytics Dataset), CC BY 4.0",
+  "cut_off_hari": 60,
+  "jumlah_fitur": 24,
+  "threshold": 0.4,
+  "level_risiko": {
+    "TINGGI": "p >= 0.70",
+    "SEDANG": "0.40 <= p < 0.70",
+    "RENDAH": "p < 0.40"
+  },
+  "data_latih": {
+    "kohor": "2013B, 2013J",
+    "jumlah": 13529
+  },
+  "data_uji": {
+    "kohor": "2014B, 2014J",
+    "jumlah": 19064
+  },
+  "metrik_uji": {
+    "roc_auc": 0.872,
+    "cv_roc_auc_5fold": 0.88,
+    "akurasi": 0.778,
+    "precision_berisiko": 0.779,
+    "recall_berisiko": 0.821,
+    "f1_berisiko": 0.799,
+    "brier_score": 0.15
+  },
+  "fitur_teratas": {
+    "missing_assignments": 0.185,
+    "score_rel_to_module": 0.154,
+    "days_inactive": 0.106,
+    "clicks_last_14d_ratio": 0.078,
+    "avg_score": 0.078
+  },
+  "versi_pustaka": {
+    "scikit-learn": "1.9.0",
+    "pandas": "3.0.3",
+    "numpy": "2.3.5",
+    "joblib": "1.5.3"
+  },
+  "catatan": "Prototipe. Dilatih dengan data publik sebagai pengganti data Moodle STIKMAS; latih ulang dengan data sekolah sebelum penerapan nyata."
+}

@@ -3,6 +3,7 @@ Modul Inferensi Model EWS Moodle (24 Fitur)
 """
 
 import os
+import json
 import joblib
 import pandas as pd
 import numpy as np
@@ -172,6 +173,12 @@ class EWSInferenceEngine:
         self.feature_cols: List[str] = self.payload["feature_cols"]
         self.threshold: float = float(self.payload.get("threshold", 0.40))
         self.course_mapping: List[Dict[str, Any]] = self.payload.get("course_mapping", [])
+        card_path = os.path.join(os.path.dirname(os.path.abspath(model_path)), "model_card.json")
+        self.model_card: Dict[str, Any] = {}
+        if os.path.exists(card_path):
+            with open(card_path, encoding="utf-8") as f:
+                self.model_card = json.load(f)
+        self.model_version: str = self.model_card.get("versi", "1.0.0")
 
     def predict_probability(self, features: Dict[str, Any]) -> float:
         row = {col: features.get(col, 0.0) for col in self.feature_cols}
@@ -310,7 +317,13 @@ class EWSInferenceEngine:
         max_inactive = max((c["features"].get("days_inactive", 0) for c in courses_data), default=0)
 
         if len(berisiko) >= 2:
-            profil = "Prokrastinasi / Penurunan Performa Lintas Mata Pelajaran."
+            # Sama dengan logika generate_bk_student_summary pada model_ews.ipynb
+            if missing_tasks >= 3 and late_tasks >= 2:
+                profil = "Prokrastinasi Sistemik (Keterlambatan dan kelalaian tugas di banyak mapel)."
+            elif max_inactive >= 14:
+                profil = "Inaktivitas Menyeluruh (Absensi belajar berkepanjangan dari LMS)."
+            else:
+                profil = "Kendala Belajar Multimapel."
             prioritas = "TINGGI"
             rekomendasi = "Jadwalkan konseling individual dan koordinasi dengan wali kelas."
         elif len(berisiko) == 1:

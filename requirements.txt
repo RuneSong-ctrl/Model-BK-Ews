@@ -1,0 +1,10 @@
+# Versi harus sama dengan saat pelatihan agar ews_moodle_model.pkl dapat dibuka
+scikit-learn==1.9.0
+pandas==3.0.3
+numpy==2.3.5
+joblib==1.5.3
+flask==3.1.3
+requests==2.34.2
+# untuk notebook
+matplotlib
+seaborn
