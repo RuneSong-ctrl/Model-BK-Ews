@@ -87,6 +87,19 @@ def oof(model_fn, X, y, groups, splitter):
     return p
 
 
+KALIBRASI_BINS = [0, 0.5, 0.8, 0.95, 1.0001]
+KALIBRASI_LABEL = ["< 50%", "50-79%", "80-94%", ">= 95%"]
+
+
+def calibration_table(y, p):
+    """Rata-rata prediksi vs proporsi asli berisiko per rentang probabilitas (prediksi out-of-fold)."""
+    d = pd.DataFrame({"y": y, "p": p})
+    d["rentang"] = pd.cut(d.p, KALIBRASI_BINS, labels=KALIBRASI_LABEL, right=False)
+    g = d.groupby("rentang", observed=False).agg(n=("y", "size"), p=("p", "mean"), y=("y", "mean"))
+    return [{"rentang": k, "jumlah": int(r.n), "rata_rata_prediksi": round(float(r.p), 3),
+             "proporsi_asli_berisiko": round(float(r.y), 3)} for k, r in g.iterrows()]
+
+
 def evaluate(df, oulad_model, name, probs=None):
     """Metrik semua model; bila `probs` (dict) diberikan, probabilitas out-of-fold ikut disimpan di sana."""
     X, y = df[FEATURE_COLS], df["is_at_risk"]
@@ -115,6 +128,7 @@ def evaluate(df, oulad_model, name, probs=None):
     res["per_mapel_rf"] = per
     fpr, tpr, thr = roc_curve(y, p_rf)
     res["threshold_youden_rf"] = round(float(thr[np.argmax(tpr - fpr)]), 3)
+    res["kalibrasi_rf"] = calibration_table(y.values, p_rf)
     return res
 
 

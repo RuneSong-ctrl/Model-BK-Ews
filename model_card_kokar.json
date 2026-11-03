@@ -1,7 +1,7 @@
 {
   "nama_model": "EWS Moodle 2-Tier (Random Forest terkalibrasi sigmoid) - data asli",
   "versi": "2.1.0",
-  "tanggal_latih": "2026-10-29",
+  "tanggal_latih": "2026-11-03",
   "berkas_model": "ews_kokar_model.pkl",
   "dataset": "Dump database Moodle SMK Negeri 3 Sukawati (Kokar Bali), semester ganjil 2026/2027",
   "periode_log": "6 Juli - 29 Oktober 2026 (semester belum selesai)",
@@ -151,7 +151,33 @@
           "roc_auc": 0.66
         }
       ],
-      "threshold_youden_rf": 0.793
+      "threshold_youden_rf": 0.793,
+      "kalibrasi_rf": [
+        {
+          "rentang": "< 50%",
+          "jumlah": 391,
+          "rata_rata_prediksi": 0.16,
+          "proporsi_asli_berisiko": 0.143
+        },
+        {
+          "rentang": "50-79%",
+          "jumlah": 126,
+          "rata_rata_prediksi": 0.676,
+          "proporsi_asli_berisiko": 0.722
+        },
+        {
+          "rentang": "80-94%",
+          "jumlah": 187,
+          "rata_rata_prediksi": 0.894,
+          "proporsi_asli_berisiko": 0.909
+        },
+        {
+          "rentang": ">= 95%",
+          "jumlah": 1512,
+          "rata_rata_prediksi": 0.991,
+          "proporsi_asli_berisiko": 0.99
+        }
+      ]
     },
     "B": {
       "skenario": "B - hari ke-28, label item setelah cut-off",
@@ -272,7 +298,33 @@
           "roc_auc": 0.722
         }
       ],
-      "threshold_youden_rf": 0.854
+      "threshold_youden_rf": 0.854,
+      "kalibrasi_rf": [
+        {
+          "rentang": "< 50%",
+          "jumlah": 213,
+          "rata_rata_prediksi": 0.359,
+          "proporsi_asli_berisiko": 0.343
+        },
+        {
+          "rentang": "50-79%",
+          "jumlah": 237,
+          "rata_rata_prediksi": 0.645,
+          "proporsi_asli_berisiko": 0.641
+        },
+        {
+          "rentang": "80-94%",
+          "jumlah": 543,
+          "rata_rata_prediksi": 0.911,
+          "proporsi_asli_berisiko": 0.915
+        },
+        {
+          "rentang": ">= 95%",
+          "jumlah": 760,
+          "rata_rata_prediksi": 0.967,
+          "proporsi_asli_berisiko": 0.971
+        }
+      ]
     }
   },
   "fitur_teratas": {
