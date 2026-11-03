@@ -2,14 +2,14 @@
 Pipeline Operasional EWS 2-Tier: Fitur Siswa -> Model -> JSON -> Aplikasi Web BK-EWS
 
 Langkah yang dijalankan:
-1. Membaca 24 fitur per siswa per mata pelajaran (prototipe: simulasi/kelas_stikmas_hari60.csv;
-   penerapan nyata: hasil ekstraksi dari database Moodle sekolah).
-2. Menghitung probabilitas risiko dengan ews_moodle_model.pkl.
+1. Membaca 24 fitur per siswa per mata pelajaran (default: data_kokar/fitur_kokar_hari45_anonim.csv hasil
+   train_kokar.py dari database Moodle asli).
+2. Menghitung probabilitas risiko dengan ews_kokar_model.pkl (pembanding: baseline_oulad/ews_moodle_model.pkl).
 3. Menyusun payload Tier 1 (Guru Mapel) dan Tier 2 (Guru BK).
 4. Menyimpan JSON (--export) dan/atau mengirimkannya ke API Laravel (--push).
 
 Contoh:
-    python run_pipeline.py --export sample_output.json
+    python run_pipeline.py --export data_kokar/output_kokar.json
     python run_pipeline.py --push http://127.0.0.1:8000 --token RAHASIA
 """
 
@@ -26,8 +26,8 @@ from ews_features import FEATURE_COLS
 from ews_inference import EWSInferenceEngine
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DEFAULT_INPUT = os.path.join(BASE_DIR, "simulasi", "kelas_stikmas_hari60.csv")
-DEFAULT_MODEL = os.path.join(BASE_DIR, "ews_moodle_model.pkl")
+DEFAULT_INPUT = os.path.join(BASE_DIR, "data_kokar", "fitur_kokar_hari45_anonim.csv")
+DEFAULT_MODEL = os.path.join(BASE_DIR, "ews_kokar_model.pkl")
 
 
 def course_info(engine: EWSInferenceEngine, code: str) -> dict:

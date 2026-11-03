@@ -1,0 +1,255 @@
+{
+ "sumber": "Moodle sekolah (anonim)",
+ "presets": {
+  "aktif_aman": {
+   "label": "Aktif & nilai baik (7%)",
+   "description": "Rutin membuka Moodle, kuis dan tugas dikerjakan dengan nilai baik.",
+   "kelompok_n": 509,
+   "course": {
+    "code_module": "KIK.P",
+    "nama_mapel": "KIK Pariwisata & TKKR",
+    "kategori": "Kejuruan/Produktif",
+    "guru_pengampu": "Guru KIK Pariwisata & TKKR",
+    "kkm": 75
+   },
+   "features": {
+    "total_clicks": 48.0,
+    "active_days": 3.0,
+    "days_inactive": 7.0,
+    "is_inactive_gt_5d": 1.0,
+    "is_inactive_gt_14d": 0.0,
+    "clicks_per_active_day": 16.0,
+    "clicks_last_14d_ratio": 0.125,
+    "unique_sites_accessed": 3.0,
+    "course_duration_hours": 0.246,
+    "missing_assignments": 0.0,
+    "late_submission_count": 0.0,
+    "avg_submission_gap": -1.5,
+    "procrastination_count": 0.0,
+    "lesson_attempts_count": 1.0,
+    "lesson_time_spent_min": 8.883,
+    "lesson_completion_ratio": 1.0,
+    "lesson_avg_score": 100.0,
+    "avg_score": 100.0,
+    "min_score": 100.0,
+    "score_rel_to_module": 43.1,
+    "failing_tasks_count": 0.0,
+    "grade_trend": 0.0,
+    "num_of_prev_attempts": 0.0,
+    "studied_credits": 7.0
+   }
+  },
+  "mulai_waspada": {
+   "label": "Mulai waspada (91%)",
+   "description": "Masih aktif, tetapi ada kuis/tugas yang terlewat atau nilai mulai turun.",
+   "kelompok_n": 161,
+   "course": {
+    "code_module": "MAT.TB",
+    "nama_mapel": "Matematika Seni & Kuliner",
+    "kategori": "Umum/Normatif-Adaptif",
+    "guru_pengampu": "Guru Matematika Seni & Kuliner",
+    "kkm": 75
+   },
+   "features": {
+    "total_clicks": 30.0,
+    "active_days": 4.0,
+    "days_inactive": 11.0,
+    "is_inactive_gt_5d": 1.0,
+    "is_inactive_gt_14d": 0.0,
+    "clicks_per_active_day": 7.5,
+    "clicks_last_14d_ratio": 0.133,
+    "unique_sites_accessed": 3.0,
+    "course_duration_hours": 0.189,
+    "missing_assignments": 0.0,
+    "late_submission_count": 0.0,
+    "avg_submission_gap": -2.951,
+    "procrastination_count": 0.0,
+    "lesson_attempts_count": 1.0,
+    "lesson_time_spent_min": 3.617,
+    "lesson_completion_ratio": 1.0,
+    "lesson_avg_score": 90.0,
+    "avg_score": 90.0,
+    "min_score": 90.0,
+    "score_rel_to_module": 28.824,
+    "failing_tasks_count": 0.0,
+    "grade_trend": 0.0,
+    "num_of_prev_attempts": 0.0,
+    "studied_credits": 7.0
+   }
+  },
+  "rajin_nilai_rendah": {
+   "label": "Aktif tetapi nilai rendah (99%)",
+   "description": "Sering membuka Moodle, tetapi nilai kuis/tugas di bawah KKM.",
+   "kelompok_n": 62,
+   "course": {
+    "code_module": "MAT.TB",
+    "nama_mapel": "Matematika Seni & Kuliner",
+    "kategori": "Umum/Normatif-Adaptif",
+    "guru_pengampu": "Guru Matematika Seni & Kuliner",
+    "kkm": 75
+   },
+   "features": {
+    "total_clicks": 32.0,
+    "active_days": 3.0,
+    "days_inactive": 14.0,
+    "is_inactive_gt_5d": 1.0,
+    "is_inactive_gt_14d": 1.0,
+    "clicks_per_active_day": 10.667,
+    "clicks_last_14d_ratio": 0.031,
+    "unique_sites_accessed": 1.0,
+    "course_duration_hours": 0.141,
+    "missing_assignments": 0.0,
+    "late_submission_count": 0.0,
+    "avg_submission_gap": -3.033,
+    "procrastination_count": 0.0,
+    "lesson_attempts_count": 1.0,
+    "lesson_time_spent_min": 4.083,
+    "lesson_completion_ratio": 1.0,
+    "lesson_avg_score": 70.0,
+    "avg_score": 70.0,
+    "min_score": 70.0,
+    "score_rel_to_module": 8.824,
+    "failing_tasks_count": 0.0,
+    "grade_trend": 0.0,
+    "num_of_prev_attempts": 0.0,
+    "studied_credits": 7.0
+   }
+  },
+  "inaktif": {
+   "label": "Tidak aktif di Moodle (99%)",
+   "description": "Hampir tidak pernah membuka mapel ini dan kuis/tugas tidak dikerjakan.",
+   "kelompok_n": 1271,
+   "course": {
+    "code_module": "KIK.P",
+    "nama_mapel": "KIK Pariwisata & TKKR",
+    "kategori": "Kejuruan/Produktif",
+    "guru_pengampu": "Guru KIK Pariwisata & TKKR",
+    "kkm": 75
+   },
+   "features": {
+    "total_clicks": 0.0,
+    "active_days": 0.0,
+    "days_inactive": 45.0,
+    "is_inactive_gt_5d": 1.0,
+    "is_inactive_gt_14d": 1.0,
+    "clicks_per_active_day": 0.0,
+    "clicks_last_14d_ratio": 0.0,
+    "unique_sites_accessed": 0.0,
+    "course_duration_hours": 0.0,
+    "missing_assignments": 1.0,
+    "late_submission_count": 0.0,
+    "avg_submission_gap": 0.0,
+    "procrastination_count": 0.0,
+    "lesson_attempts_count": 0.0,
+    "lesson_time_spent_min": 0.0,
+    "lesson_completion_ratio": 0.0,
+    "lesson_avg_score": 0.0,
+    "avg_score": 0.0,
+    "min_score": 0.0,
+    "score_rel_to_module": -56.9,
+    "failing_tasks_count": 0.0,
+    "grade_trend": 0.0,
+    "num_of_prev_attempts": 0.0,
+    "studied_credits": 7.0
+   }
+  }
+ },
+ "ranges": {
+  "total_clicks": {
+   "min": 0.0,
+   "max": 148.0
+  },
+  "active_days": {
+   "min": 0.0,
+   "max": 11.0
+  },
+  "days_inactive": {
+   "min": 0.0,
+   "max": 45.0
+  },
+  "is_inactive_gt_5d": {
+   "min": 0.0,
+   "max": 1.0
+  },
+  "is_inactive_gt_14d": {
+   "min": 0.0,
+   "max": 1.0
+  },
+  "clicks_per_active_day": {
+   "min": 0.0,
+   "max": 45.0
+  },
+  "clicks_last_14d_ratio": {
+   "min": 0.0,
+   "max": 1.0
+  },
+  "unique_sites_accessed": {
+   "min": 0.0,
+   "max": 7.0
+  },
+  "course_duration_hours": {
+   "min": 0.0,
+   "max": 2.0
+  },
+  "missing_assignments": {
+   "min": 0.0,
+   "max": 3.0
+  },
+  "late_submission_count": {
+   "min": 0.0,
+   "max": 1.0
+  },
+  "avg_submission_gap": {
+   "min": -108.18292824074074,
+   "max": 6.0
+  },
+  "procrastination_count": {
+   "min": 0.0,
+   "max": 2.0
+  },
+  "lesson_attempts_count": {
+   "min": 0.0,
+   "max": 4.0
+  },
+  "lesson_time_spent_min": {
+   "min": 0.0,
+   "max": 178.0
+  },
+  "lesson_completion_ratio": {
+   "min": 0.0,
+   "max": 1.0
+  },
+  "lesson_avg_score": {
+   "min": 0.0,
+   "max": 100.0
+  },
+  "avg_score": {
+   "min": 0.0,
+   "max": 100.0
+  },
+  "min_score": {
+   "min": 0.0,
+   "max": 100.0
+  },
+  "score_rel_to_module": {
+   "min": -64.30258467023174,
+   "max": 69.0
+  },
+  "failing_tasks_count": {
+   "min": 0.0,
+   "max": 1.0
+  },
+  "grade_trend": {
+   "min": -100.0,
+   "max": 40.0
+  },
+  "num_of_prev_attempts": {
+   "min": 0.0,
+   "max": 1.0
+  },
+  "studied_credits": {
+   "min": 0.0,
+   "max": 7.0
+  }
+ }
+}

@@ -1,6 +1,10 @@
 """
 Interactive Web Sandbox Application untuk Model EWS Moodle (2-Tier)
-Menjalankan server web lokal untuk menguji model Calibrated Random Forest (24 fitur).
+Menjalankan server web lokal untuk mencoba model Calibrated Random Forest (24 fitur).
+
+Model  : ews_kokar_model.pkl (dilatih data Moodle asli sekolah, sama dengan yang dipakai web).
+Preset : sandbox_presets.json, profil siswa asli yang dianonimkan (dibuat oleh train_kokar.py).
+Perbandingan dengan model prototipe OULAD ada di model_ews.ipynb (Bagian II), bukan di sandbox.
 
 Jalankan dengan:
     python sandbox_app.py
@@ -8,69 +12,69 @@ Lalu buka:
     http://127.0.0.1:5000
 """
 
-import os
-import json
 import argparse
-from flask import Flask, render_template, request, jsonify
-from ews_inference import EWSInferenceEngine, PRESET_PROFILES
+import json
+import os
+
+from flask import Flask, jsonify, render_template, request
+
+from ews_inference import EWSInferenceEngine
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "ews_kokar_model.pkl")
+PRESETS_PATH = os.path.join(BASE_DIR, "sandbox_presets.json")
 
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
-engine = EWSInferenceEngine()
+engine = EWSInferenceEngine(MODEL_PATH)
+with open(PRESETS_PATH, encoding="utf-8") as f:
+    SANDBOX = json.load(f)
+PRESETS = SANDBOX["presets"]
+
+
+def model_info():
+    return {
+        "versi": engine.model_version,
+        "sumber": SANDBOX["sumber"],
+        "threshold": engine.threshold,
+        "threshold_tinggi": engine.threshold_tinggi,
+        "kkm": next(iter(PRESETS.values()))["course"]["kkm"],
+    }
+
 
 @app.route('/')
 def index():
     return render_template(
         'index.html',
-        presets_json=json.dumps(PRESET_PROFILES, ensure_ascii=False)
+        presets_json=json.dumps(PRESETS, ensure_ascii=False),
+        ranges_json=json.dumps(SANDBOX["ranges"]),
+        info_json=json.dumps(model_info(), ensure_ascii=False),
     )
+
 
 @app.route('/api/predict', methods=['POST'])
 def predict():
     try:
         data = request.get_json(force=True)
-        student_id = data.get('student_id', 28400)
+        student_id = data.get('student_id', 900001)
         features = data.get('features', {})
+        preset = PRESETS.get(data.get('preset'), next(iter(PRESETS.values())))
 
         prob = engine.predict_probability(features)
         level, color, urgency = engine.determine_risk_level(prob)
         triggers = engine.extract_trigger_factors(features, prob)
 
-        course_info = {
-            "code_module": "AAA",
-            "nama_mapel": "Pemrograman Web dan Perangkat Bergerak",
-            "kategori": "Kejuruan",
-            "guru_pengampu": "I Wayan Sudarma, S.Kom.",
-            "kkm": 75
-        }
-
+        course_info = preset["course"]
         tier1_payload = engine.generate_subject_teacher_payload(
-            student_id=student_id,
-            course_info=course_info,
-            features=features,
-            probability=prob
-        )
+            student_id=student_id, course_info=course_info, features=features, probability=prob)
 
-        course_comparison = {
-            "code_module": "BBB",
-            "nama_mapel": "Basis Data",
-            "kategori": "Kejuruan",
-            "guru_pengampu": "Ni Made Rai Astuti, S.Pd.",
-            "kkm": 75
-        }
-        features_comp = dict(features)
-        features_comp["missing_assignments"] = max(0, int(features.get("missing_assignments", 0)) - 1)
-        prob_comp = engine.predict_probability(features_comp)
-
-        courses_data = [
-            {"course": course_info, "features": features, "probability": prob},
-            {"course": course_comparison, "features": features_comp, "probability": prob_comp}
-        ]
-
-        tier2_payload = engine.generate_bk_student_summary(
-            student_id=student_id,
-            courses_data=courses_data
-        )
+        # Tier 2: gabungkan mapel yang sedang dicoba dengan mapel lain dari preset berbeda
+        courses_data = [{"course": course_info, "features": features, "probability": prob}]
+        for other in PRESETS.values():
+            if other["course"]["code_module"] != course_info["code_module"]:
+                courses_data.append({"course": other["course"], "features": other["features"],
+                                     "probability": engine.predict_probability(other["features"])})
+        tier2_payload = engine.generate_bk_student_summary(student_id=student_id, courses_data=courses_data)
 
         return jsonify({
             "status": "success",
@@ -86,9 +90,11 @@ def predict():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
 
+
 @app.route('/api/presets', methods=['GET'])
 def get_presets():
-    return jsonify(PRESET_PROFILES)
+    return jsonify(PRESETS)
+
 
 def main():
     parser = argparse.ArgumentParser(description="EWS Moodle Interactive Sandbox")
@@ -99,13 +105,14 @@ def main():
     print("\n" + "=" * 70)
     print("  EWS MOODLE - INTERACTIVE MACHINE LEARNING SANDBOX")
     print("=" * 70)
-    print(f"-> Model file       : {engine.model_path}")
-    print(f"-> Threshold        : {engine.threshold}")
-    print(f"-> Fitur            : {len(engine.feature_cols)} fitur terstandarisasi")
+    print(f"-> Model utama      : {engine.model_path} (v{engine.model_version})")
+    print(f"-> Ambang           : SEDANG >= {engine.threshold}, TINGGI >= {engine.threshold_tinggi}")
+    print(f"-> Preset           : {len(PRESETS)} profil siswa asli (anonim)")
     print(f"-> Dashboard URL    : http://{args.host}:{args.port}")
     print("=" * 70 + "\n")
 
     app.run(host=args.host, port=args.port, debug=False)
+
 
 if __name__ == '__main__':
     main()

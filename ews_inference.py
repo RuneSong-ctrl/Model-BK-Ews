@@ -9,7 +9,8 @@ import pandas as pd
 import numpy as np
 from typing import Dict, Any, List, Tuple
 
-DEFAULT_MODEL_PATH = "ews_moodle_model.pkl"
+# Model pembanding OULAD (preset sandbox & test_model.py dikalibrasi untuk model ini)
+DEFAULT_MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "baseline_oulad", "ews_moodle_model.pkl")
 
 PRESET_PROFILES: Dict[str, Dict[str, Any]] = {
     "teladan_aman": {
@@ -172,13 +173,18 @@ class EWSInferenceEngine:
         self.model = self.payload["model"]
         self.feature_cols: List[str] = self.payload["feature_cols"]
         self.threshold: float = float(self.payload.get("threshold", 0.40))
+        self.threshold_tinggi: float = float(self.payload.get("threshold_tinggi", 0.70))
+        # None = aturan lama (>= 2 mapel berisiko -> prioritas BK TINGGI); angka = porsi minimal mapel TINGGI
+        self.bk_rasio_tinggi = self.payload.get("bk_rasio_tinggi")
+        self.batas_durasi_jam: float = float(self.payload.get("batas_durasi_jam", 5.0))
+        self.istilah_lesson: str = self.payload.get("istilah_lesson", "Lesson")
         self.course_mapping: List[Dict[str, Any]] = self.payload.get("course_mapping", [])
         card_path = os.path.join(os.path.dirname(os.path.abspath(model_path)), "model_card.json")
         self.model_card: Dict[str, Any] = {}
         if os.path.exists(card_path):
             with open(card_path, encoding="utf-8") as f:
                 self.model_card = json.load(f)
-        self.model_version: str = self.model_card.get("versi", "1.0.0")
+        self.model_version: str = self.payload.get("versi") or self.model_card.get("versi", "1.0.0")
 
     def predict_probability(self, features: Dict[str, Any]) -> float:
         row = {col: features.get(col, 0.0) for col in self.feature_cols}
@@ -187,7 +193,7 @@ class EWSInferenceEngine:
         return prob
 
     def determine_risk_level(self, prob: float) -> Tuple[str, str, str]:
-        if prob >= 0.70:
+        if prob >= self.threshold_tinggi:
             return "TINGGI", "MERAH", "Segera"
         if prob >= self.threshold:
             return "SEDANG", "KUNING", "Menengah"
@@ -201,11 +207,11 @@ class EWSInferenceEngine:
         lesson_attempts = int(features.get("lesson_attempts_count", 0))
         lesson_score = float(features.get("lesson_avg_score", 0.0))
         if lesson_attempts == 0:
-            triggers.append("Belum mengakses aktivitas Lesson interaktif sama sekali.")
+            triggers.append(f"Belum mengerjakan aktivitas {self.istilah_lesson} sama sekali.")
         elif lesson_score < 50.0:
-            triggers.append(f"Nilai rata-rata Lesson di bawah standar ({lesson_score:.1f}).")
+            triggers.append(f"Nilai rata-rata {self.istilah_lesson} di bawah standar ({lesson_score:.1f}).")
         duration = float(features.get("course_duration_hours", 0.0))
-        if duration < 5.0:
+        if duration < self.batas_durasi_jam:
             triggers.append(f"Akumulasi waktu belajar sangat rendah ({duration:.1f} jam).")
         days_inactive = int(features.get("days_inactive", 0))
         if days_inactive >= 14:
@@ -316,7 +322,13 @@ class EWSInferenceEngine:
         late_tasks = sum(c["features"].get("late_submission_count", 0) for c in courses_data)
         max_inactive = max((c["features"].get("days_inactive", 0) for c in courses_data), default=0)
 
-        if len(berisiko) >= 2:
+        tinggi = [c for c in courses_data if c["probability"] >= self.threshold_tinggi]
+        if self.bk_rasio_tinggi is None:
+            prioritas_tinggi = len(berisiko) >= 2
+        else:
+            prioritas_tinggi = len(berisiko) >= 2 and len(tinggi) >= self.bk_rasio_tinggi * total_mapel
+
+        if prioritas_tinggi:
             # Sama dengan logika generate_bk_student_summary pada model_ews.ipynb
             if missing_tasks >= 3 and late_tasks >= 2:
                 profil = "Prokrastinasi Sistemik (Keterlambatan dan kelalaian tugas di banyak mapel)."
@@ -326,6 +338,10 @@ class EWSInferenceEngine:
                 profil = "Kendala Belajar Multimapel."
             prioritas = "TINGGI"
             rekomendasi = "Jadwalkan konseling individual dan koordinasi dengan wali kelas."
+        elif len(berisiko) >= 2:
+            profil = "Kendala Belajar Multimapel."
+            prioritas = "SEDANG"
+            rekomendasi = "Pantau berkala dan koordinasikan dengan guru mata pelajaran terkait."
         elif len(berisiko) == 1:
             nama_mapel = berisiko[0]["course"].get("nama_mapel", "Mata Pelajaran")
             profil = f"Kesulitan Spesifik Mata Pelajaran ({nama_mapel})."

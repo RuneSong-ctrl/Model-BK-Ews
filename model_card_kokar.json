@@ -1,0 +1,289 @@
+{
+  "nama_model": "EWS Moodle 2-Tier (Random Forest terkalibrasi sigmoid) - data asli",
+  "versi": "2.1.0",
+  "tanggal_latih": "2026-10-29",
+  "berkas_model": "ews_kokar_model.pkl",
+  "dataset": "Dump database Moodle SMK Negeri 3 Sukawati (Kokar Bali), semester ganjil 2026/2027",
+  "periode_log": "6 Juli - 29 Oktober 2026 (semester belum selesai)",
+  "cut_off_hari": 45,
+  "hari_ke_0": "mdl_course.startdate (umumnya 23 Juli 2026)",
+  "label": "nilai sementara mapel < KKM 75 (rata-rata % kuis/tugas yang sudah dinilai; tidak dikerjakan = 0)",
+  "jumlah_fitur": 24,
+  "threshold": 0.8,
+  "level_risiko": {
+    "TINGGI": "p >= 0.95",
+    "SEDANG": "0.8 <= p < 0.95",
+    "RENDAH": "p < 0.8"
+  },
+  "prioritas_bk_tinggi": ">= 2 mapel berisiko dan >= 75% mapel berstatus TINGGI",
+  "fitur_konstan": [
+    "num_of_prev_attempts (tidak tercatat di Moodle)"
+  ],
+  "evaluasi": {
+    "A": {
+      "skenario": "A - hari ke-45, label nilai sementara",
+      "jumlah_baris": 2216,
+      "jumlah_siswa": 374,
+      "jumlah_mapel": 8,
+      "proporsi_berisiko": 0.819,
+      "random_forest_kalibrasi": {
+        "roc_auc": 0.974,
+        "akurasi": 0.919,
+        "precision_berisiko": 0.981,
+        "recall_berisiko": 0.919,
+        "f1_berisiko": 0.949,
+        "recall_aman": 0.92,
+        "brier_score": 0.041,
+        "confusion": {
+          "TN": 370,
+          "FP": 32,
+          "FN": 147,
+          "TP": 1667
+        }
+      },
+      "logistic_regression": {
+        "roc_auc": 0.954,
+        "akurasi": 0.785,
+        "precision_berisiko": 0.993,
+        "recall_berisiko": 0.742,
+        "f1_berisiko": 0.849,
+        "recall_aman": 0.978,
+        "brier_score": 0.089,
+        "confusion": {
+          "TN": 393,
+          "FP": 9,
+          "FN": 468,
+          "TP": 1346
+        }
+      },
+      "aturan_sederhana": {
+        "roc_auc": 0.809,
+        "akurasi": 0.809,
+        "precision_berisiko": 0.95,
+        "recall_berisiko": 0.809,
+        "f1_berisiko": 0.874,
+        "recall_aman": 0.808,
+        "brier_score": 0.191,
+        "confusion": {
+          "TN": 325,
+          "FP": 77,
+          "FN": 346,
+          "TP": 1468
+        }
+      },
+      "model_oulad_tanpa_latih_ulang": {
+        "roc_auc": 0.886,
+        "akurasi": 0.86,
+        "precision_berisiko": 0.863,
+        "recall_berisiko": 0.985,
+        "f1_berisiko": 0.92,
+        "recall_aman": 0.294,
+        "brier_score": 0.104,
+        "confusion": {
+          "TN": 118,
+          "FP": 284,
+          "FN": 27,
+          "TP": 1787
+        }
+      },
+      "random_forest_leave_one_course_out": {
+        "roc_auc": 0.826,
+        "akurasi": 0.798,
+        "precision_berisiko": 0.879,
+        "recall_berisiko": 0.874,
+        "f1_berisiko": 0.876,
+        "recall_aman": 0.458,
+        "brier_score": 0.136,
+        "confusion": {
+          "TN": 184,
+          "FP": 218,
+          "FN": 229,
+          "TP": 1585
+        }
+      },
+      "per_mapel_rf": [
+        {
+          "mapel": "Ag. Hindu",
+          "n": 374,
+          "berisiko": 0.738,
+          "roc_auc": 0.987
+        },
+        {
+          "mapel": "B.INDO",
+          "n": 374,
+          "berisiko": 0.901,
+          "roc_auc": 0.946
+        },
+        {
+          "mapel": "B.Ing",
+          "n": 374,
+          "berisiko": 0.968,
+          "roc_auc": 0.866
+        },
+        {
+          "mapel": "JUR.PERHOTELAN",
+          "n": 153,
+          "berisiko": 0.935,
+          "roc_auc": 0.95
+        },
+        {
+          "mapel": "KIK.P",
+          "n": 300,
+          "berisiko": 0.427,
+          "roc_auc": 0.989
+        },
+        {
+          "mapel": "MAPIL.PARIWISATA",
+          "n": 267,
+          "berisiko": 0.891,
+          "roc_auc": 1.0
+        },
+        {
+          "mapel": "MAT XII",
+          "n": 153,
+          "berisiko": 0.765,
+          "roc_auc": 0.94
+        },
+        {
+          "mapel": "MAT.TB",
+          "n": 221,
+          "berisiko": 0.964,
+          "roc_auc": 0.66
+        }
+      ],
+      "threshold_youden_rf": 0.793
+    },
+    "B": {
+      "skenario": "B - hari ke-28, label item setelah cut-off",
+      "jumlah_baris": 1753,
+      "jumlah_siswa": 374,
+      "jumlah_mapel": 6,
+      "proporsi_berisiko": 0.833,
+      "random_forest_kalibrasi": {
+        "roc_auc": 0.879,
+        "akurasi": 0.833,
+        "precision_berisiko": 0.948,
+        "recall_berisiko": 0.846,
+        "f1_berisiko": 0.894,
+        "recall_aman": 0.768,
+        "brier_score": 0.091,
+        "confusion": {
+          "TN": 225,
+          "FP": 68,
+          "FN": 225,
+          "TP": 1235
+        }
+      },
+      "logistic_regression": {
+        "roc_auc": 0.86,
+        "akurasi": 0.583,
+        "precision_berisiko": 0.963,
+        "recall_berisiko": 0.519,
+        "f1_berisiko": 0.675,
+        "recall_aman": 0.901,
+        "brier_score": 0.141,
+        "confusion": {
+          "TN": 264,
+          "FP": 29,
+          "FN": 702,
+          "TP": 758
+        }
+      },
+      "aturan_sederhana": {
+        "roc_auc": 0.566,
+        "akurasi": 0.731,
+        "precision_berisiko": 0.856,
+        "recall_berisiko": 0.814,
+        "f1_berisiko": 0.835,
+        "recall_aman": 0.317,
+        "brier_score": 0.269,
+        "confusion": {
+          "TN": 93,
+          "FP": 200,
+          "FN": 271,
+          "TP": 1189
+        }
+      },
+      "model_oulad_tanpa_latih_ulang": {
+        "roc_auc": 0.737,
+        "akurasi": 0.804,
+        "precision_berisiko": 0.869,
+        "recall_berisiko": 0.901,
+        "f1_berisiko": 0.884,
+        "recall_aman": 0.321,
+        "brier_score": 0.15,
+        "confusion": {
+          "TN": 94,
+          "FP": 199,
+          "FN": 145,
+          "TP": 1315
+        }
+      },
+      "random_forest_leave_one_course_out": {
+        "roc_auc": 0.792,
+        "akurasi": 0.775,
+        "precision_berisiko": 0.918,
+        "recall_berisiko": 0.801,
+        "f1_berisiko": 0.855,
+        "recall_aman": 0.645,
+        "brier_score": 0.113,
+        "confusion": {
+          "TN": 189,
+          "FP": 104,
+          "FN": 291,
+          "TP": 1169
+        }
+      },
+      "per_mapel_rf": [
+        {
+          "mapel": "Ag. Hindu",
+          "n": 374,
+          "berisiko": 0.602,
+          "roc_auc": 0.829
+        },
+        {
+          "mapel": "B.INDO",
+          "n": 374,
+          "berisiko": 0.901,
+          "roc_auc": 0.712
+        },
+        {
+          "mapel": "B.Ing",
+          "n": 374,
+          "berisiko": 0.96,
+          "roc_auc": 0.876
+        },
+        {
+          "mapel": "JUR.PERHOTELAN",
+          "n": 143,
+          "berisiko": 0.986,
+          "roc_auc": 0.936
+        },
+        {
+          "mapel": "MAPIL.PARIWISATA",
+          "n": 267,
+          "berisiko": 0.697,
+          "roc_auc": 0.787
+        },
+        {
+          "mapel": "MAT.TB",
+          "n": 221,
+          "berisiko": 0.959,
+          "roc_auc": 0.722
+        }
+      ],
+      "threshold_youden_rf": 0.854
+    }
+  },
+  "fitur_teratas": {
+    "total_clicks": 0.13,
+    "lesson_avg_score": 0.111,
+    "score_rel_to_module": 0.107,
+    "avg_score": 0.106,
+    "lesson_time_spent_min": 0.084,
+    "min_score": 0.07,
+    "lesson_completion_ratio": 0.065,
+    "avg_submission_gap": 0.058
+  },
+  "catatan": "Prototipe. Data satu sekolah, satu semester berjalan; label adalah proksi nilai akhir."
+}

@@ -21,3 +21,7 @@ Thumbs.db
 
 # graphify knowledge graph (lokal)
 graphify-out/
+
+# Data asli sekolah (berisi identitas siswa) - jangan di-commit
+data_kokar/
+*.sql

@@ -7,9 +7,16 @@ Atau opsi:
 """
 
 import sys
+import os
 import argparse
 import json
 from ews_inference import EWSInferenceEngine, PRESET_PROFILES
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+KOKAR_MODEL = os.path.join(BASE_DIR, "ews_kokar_model.pkl")
+KOKAR_PRESETS = os.path.join(BASE_DIR, "sandbox_presets.json")
+# Target level preset sandbox (profil siswa asli anonim, lihat train_kokar.export_sandbox)
+KOKAR_TARGET = {"aktif_aman": "RENDAH", "mulai_waspada": "SEDANG", "rajin_nilai_rendah": "TINGGI", "inaktif": "TINGGI"}
 
 def print_header(title: str):
     print("\n" + "=" * 70)
@@ -96,6 +103,29 @@ def test_json_payloads(engine: EWSInferenceEngine) -> bool:
     print("[PASS] Format payload Tier 2 (Guru BK) valid dengan agregasi lintas mata pelajaran.")
     return True
 
+def test_kokar_model() -> bool:
+    print_header("4. PENGUJIAN MODEL DATA SEKOLAH & PRESET SANDBOX")
+    if not (os.path.exists(KOKAR_MODEL) and os.path.exists(KOKAR_PRESETS)):
+        print("[SKIP] ews_kokar_model.pkl / sandbox_presets.json belum ada (jalankan train_kokar.py).")
+        return True
+    engine = EWSInferenceEngine(KOKAR_MODEL)
+    assert len(engine.feature_cols) == 24
+    print(f"-> Model v{engine.model_version} | SEDANG >= {engine.threshold}, TINGGI >= {engine.threshold_tinggi}")
+    presets = json.load(open(KOKAR_PRESETS, encoding="utf-8"))["presets"]
+    ok = True
+    for key, target in KOKAR_TARGET.items():
+        prob = engine.predict_probability(presets[key]["features"])
+        level, _, _ = engine.determine_risk_level(prob)
+        passed = level == target
+        ok = ok and passed
+        print(f"{'[PASS]' if passed else '[FAIL]'} {presets[key]['label']:<36} p={prob:.3f} -> {level} (target {target})")
+    courses = [{"course": p["course"], "features": p["features"],
+                "probability": engine.predict_probability(p["features"])} for p in presets.values()]
+    tier2 = engine.generate_bk_student_summary(student_id=900001, courses_data=courses)
+    assert tier2["prioritas_konseling"] in ("TINGGI", "SEDANG", "RENDAH")
+    print(f"[PASS] Tier 2 dari {len(courses)} mapel -> prioritas {tier2['prioritas_konseling']}")
+    return ok
+
 def main():
     parser = argparse.ArgumentParser(description="Tool CLI Pengujian Model EWS Moodle")
     parser.add_argument("--preset", type=str, choices=list(PRESET_PROFILES.keys()), help="Uji 1 preset tertentu")
@@ -119,9 +149,10 @@ def main():
     pass1 = test_model_loading(engine)
     pass2 = test_preset_scenarios(engine)
     pass3 = test_json_payloads(engine)
+    pass4 = test_kokar_model()
 
     print_header("RINGKASAN HASIL PENGUJIAN")
-    if pass1 and pass2 and pass3:
+    if pass1 and pass2 and pass3 and pass4:
         print("SELURUH PENGUJIAN LULUS DENGAN SUKSES! [ALL TESTS PASSED]")
         print("Model EWS siap digunakan.")
     else:

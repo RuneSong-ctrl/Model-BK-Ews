@@ -488,6 +488,8 @@
       <span class="brand-title">EWS Moodle</span>
       <span class="brand-separator">/</span>
       <span class="brand-sub">Model Sandbox</span>
+      <span class="brand-separator">/</span>
+      <span class="brand-sub" id="modelInfo"></span>
     </div>
   </header>
 
@@ -497,6 +499,10 @@
       <div class="panel">
         <div class="panel-label">Preset Profil</div>
         <div class="preset-list" id="presetButtons"></div>
+        <div class="eval-box">
+          <div class="eval-title">Profil Terpilih</div>
+          <ul class="eval-list"><li id="presetDesc">-</li></ul>
+        </div>
       </div>
 
       <div class="panel">
@@ -509,15 +515,26 @@
             </svg>
             <div class="gauge-center">
               <div class="gauge-value" id="gaugeText">0%</div>
-              <div class="gauge-sub">Probabilitas</div>
+              <div class="gauge-sub">Peluang di bawah KKM</div>
             </div>
           </div>
           <div id="riskBadge" class="risk-tag">Aman</div>
         </div>
 
         <div class="eval-box">
-          <div class="eval-title">Faktor Evaluasi</div>
+          <div class="eval-title">Catatan dari Aktivitas Siswa</div>
           <ul class="eval-list" id="triggerList"></ul>
+        </div>
+
+        <div class="eval-box">
+          <div class="eval-title">Cara Membaca Hasil</div>
+          <ul class="eval-list">
+            <li id="artiPersen">-</li>
+            <li id="batasRendah">-</li>
+            <li id="batasSedang">-</li>
+            <li id="batasTinggi">-</li>
+            <li>Geser slider di kanan untuk melihat bagaimana perubahan aktivitas siswa mengubah risikonya.</li>
+          </ul>
         </div>
       </div>
     </aside>
@@ -546,7 +563,7 @@
         <!-- 3. Aktivitas Lesson -->
         <div class="feature-card">
           <div class="feature-card-header">
-            <h3>Aktivitas Lesson</h3>
+            <h3>Aktivitas Kuis (Lesson)</h3>
             <span class="count">4 Fitur</span>
           </div>
           <div id="group-lesson"></div>
@@ -577,9 +594,14 @@
   </div>
 
   <script id="presets-data" type="application/json">{{ presets_json | safe }}</script>
+  <script id="ranges-data" type="application/json">{{ ranges_json | safe }}</script>
+  <script id="info-data" type="application/json">{{ info_json | safe }}</script>
   <script>
     const presetsData = JSON.parse(document.getElementById('presets-data').textContent || '{}');
-    let currentFeatures = Object.assign({}, (presetsData['teladan_aman'] && presetsData['teladan_aman'].features) || {});
+    const rangesData = JSON.parse(document.getElementById('ranges-data').textContent || '{}');
+    const modelInfo = JSON.parse(document.getElementById('info-data').textContent || '{}');
+    let currentPreset = Object.keys(presetsData)[0];
+    let currentFeatures = Object.assign({}, (presetsData[currentPreset] && presetsData[currentPreset].features) || {});
     let currentTab = 'tier1';
     let lastPayload = null;
 
@@ -602,20 +624,31 @@
       procrastination_count: { label: 'Pengumpulan Mepet (<24 Jam)', group: 'tugas', min: 0, max: 10, step: 1 },
       
       // Lesson
-      lesson_attempts_count: { label: 'Percobaan Lesson', group: 'lesson', min: 0, max: 15, step: 1 },
-      lesson_time_spent_min: { label: 'Durasi Lesson (Menit)', group: 'lesson', min: 0, max: 300, step: 5 },
-      lesson_completion_ratio: { label: 'Rasio Ketuntasan Lesson', group: 'lesson', min: 0, max: 1, step: 0.05 },
-      lesson_avg_score: { label: 'Rata-rata Nilai Lesson', group: 'lesson', min: 0, max: 100, step: 1 },
+      lesson_attempts_count: { label: 'Percobaan Kuis', group: 'lesson', min: 0, max: 15, step: 1 },
+      lesson_time_spent_min: { label: 'Durasi Mengerjakan Kuis (Menit)', group: 'lesson', min: 0, max: 300, step: 1 },
+      lesson_completion_ratio: { label: 'Rasio Kuis Dikerjakan', group: 'lesson', min: 0, max: 1, step: 0.05 },
+      lesson_avg_score: { label: 'Rata-rata Nilai Kuis', group: 'lesson', min: 0, max: 100, step: 1 },
       
       // Akademik
-      avg_score: { label: 'Rata-rata Nilai Tugas', group: 'akademik', min: 0, max: 100, step: 0.5 },
-      min_score: { label: 'Nilai Tugas Terendah', group: 'akademik', min: 0, max: 100, step: 0.5 },
+      avg_score: { label: 'Rata-rata Nilai Kuis & Tugas', group: 'akademik', min: 0, max: 100, step: 0.5 },
+      min_score: { label: 'Nilai Kuis/Tugas Terendah', group: 'akademik', min: 0, max: 100, step: 0.5 },
       score_rel_to_module: { label: 'Deviasi Nilai Rata-rata Mapel', group: 'akademik', min: -50, max: 50, step: 1 },
-      failing_tasks_count: { label: 'Tugas di Bawah KKM (<40)', group: 'akademik', min: 0, max: 10, step: 1 },
+      failing_tasks_count: { label: 'Kuis/Tugas Bernilai < 40', group: 'akademik', min: 0, max: 10, step: 1 },
       grade_trend: { label: 'Tren Nilai (+ / -)', group: 'akademik', min: -50, max: 50, step: 1 },
-      num_of_prev_attempts: { label: 'Riwayat Remedial / Mengulang', group: 'akademik', min: 0, max: 5, step: 1 },
-      studied_credits: { label: 'Beban Jam Pelajaran (JP)', group: 'akademik', min: 30, max: 180, step: 10 }
+      num_of_prev_attempts: { label: 'Riwayat Mengulang (tidak tercatat di Moodle)', group: 'akademik', min: 0, max: 5, step: 1 },
+      studied_credits: { label: 'Jumlah Mapel Diikuti', group: 'akademik', min: 1, max: 10, step: 1 }
     };
+
+    // Rentang slider mengikuti sebaran data sekolah (persentil 99), dikirim dari server
+    const FIXED = ['is_inactive_gt_5d', 'is_inactive_gt_14d', 'clicks_last_14d_ratio', 'lesson_completion_ratio',
+                   'lesson_avg_score', 'avg_score', 'min_score', 'num_of_prev_attempts', 'studied_credits'];
+    Object.keys(rangesData).forEach(f => {
+      if (!featureConfigs[f] || FIXED.includes(f)) return;
+      const c = featureConfigs[f];
+      c.min = Math.min(c.min, rangesData[f].min);
+      c.max = rangesData[f].max;
+      if (c.max <= 5 && !Number.isInteger(c.step)) c.step = 0.05;
+    });
 
     function initUI() {
       // Build preset buttons
@@ -631,6 +664,15 @@
         btn.onclick = () => selectPreset(key, btn);
         pContainer.appendChild(btn);
       });
+      document.getElementById('modelInfo').innerText = `${modelInfo.sumber}, model v${modelInfo.versi}`;
+      const lo = Math.round(modelInfo.threshold * 100), hi = Math.round(modelInfo.threshold_tinggi * 100);
+      document.getElementById('artiPersen').innerText =
+        `Angka di lingkaran = seberapa yakin model bahwa siswa ini akan mendapat nilai di bawah KKM ${modelInfo.kkm} ` +
+        `di mapel ini, dihitung dari 24 catatan aktivitas Moodle-nya (klik, kuis, tugas, nilai). Makin besar, makin berisiko.`;
+      document.getElementById('batasRendah').innerText = `Di bawah ${lo}%: risiko Rendah, aktivitas belajar normal.`;
+      document.getElementById('batasSedang').innerText = `${lo}% sampai ${hi - 1}%: risiko Sedang, guru mapel perlu memantau.`;
+      document.getElementById('batasTinggi').innerText = `${hi}% ke atas: risiko Tinggi, perlu tindakan segera (guru mapel / BK).`;
+      showPresetDesc();
 
       // Build sliders
       Object.keys(featureConfigs).forEach(feat => {
@@ -656,7 +698,7 @@
           
           if (feat === 'days_inactive') {
             currentFeatures['is_inactive_gt_5d'] = val > 5 ? 1 : 0;
-            currentFeatures['is_inactive_gt_14d'] = val > 14 ? 1 : 0;
+            currentFeatures['is_inactive_gt_14d'] = val >= 14 ? 1 : 0;
             updateSliderDisplay('is_inactive_gt_5d', currentFeatures['is_inactive_gt_5d']);
             updateSliderDisplay('is_inactive_gt_14d', currentFeatures['is_inactive_gt_14d']);
           }
@@ -679,11 +721,19 @@
     function selectPreset(key, btn) {
       document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+      currentPreset = key;
+      showPresetDesc();
       currentFeatures = Object.assign({}, presetsData[key].features);
       Object.keys(currentFeatures).forEach(k => {
         updateSliderDisplay(k, currentFeatures[k]);
       });
       requestPredict();
+    }
+
+    function showPresetDesc() {
+      const p = presetsData[currentPreset];
+      document.getElementById('presetDesc').innerText =
+        `${p.description} Contoh nyata (nama disamarkan) di mapel ${p.course.nama_mapel}, mewakili ${p.kelompok_n} data siswa per mapel dengan pola serupa.`;
     }
 
     let debounceTimer;
@@ -697,7 +747,7 @@
         const resp = await fetch('/api/predict', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ student_id: 28400, features: currentFeatures })
+          body: JSON.stringify({ student_id: 900001, preset: currentPreset, features: currentFeatures })
         });
         const data = await resp.json();
         lastPayload = data;
@@ -720,11 +770,11 @@
 
       const badge = document.getElementById('riskBadge');
       if (data.risk_color === 'MERAH') {
-        badge.innerText = `Tinggi (${pct}%)`;
+        badge.innerText = `Risiko Tinggi`;
       } else if (data.risk_color === 'KUNING') {
-        badge.innerText = `Waspada (${pct}%)`;
+        badge.innerText = `Risiko Sedang`;
       } else {
-        badge.innerText = `Aman (${pct}%)`;
+        badge.innerText = `Risiko Rendah`;
       }
 
       // Triggers
@@ -735,6 +785,7 @@
         li.innerText = t;
         tList.appendChild(li);
       });
+
 
       renderJsonTab();
     }
