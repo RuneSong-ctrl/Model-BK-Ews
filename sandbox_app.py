@@ -3,7 +3,8 @@ Interactive Web Sandbox Application untuk Model EWS Moodle (2-Tier)
 Menjalankan server web lokal untuk mencoba model Calibrated Random Forest (24 fitur).
 
 Model  : ews_kokar_model.pkl (dilatih data Moodle asli sekolah, sama dengan yang dipakai web).
-Preset : sandbox_presets.json, profil siswa asli yang dianonimkan (dibuat oleh train_kokar.py).
+Preset : sandbox_presets.json, profil contoh buatan per level risiko (bukan siswa nyata).
+         Menjalankan train_kokar.py akan menimpa preset ini dengan profil dari data asli.
 Perbandingan dengan model prototipe OULAD ada di model_ews.ipynb (Bagian II), bukan di sandbox.
 
 Jalankan dengan:
@@ -30,6 +31,8 @@ engine = EWSInferenceEngine(MODEL_PATH)
 with open(PRESETS_PATH, encoding="utf-8") as f:
     SANDBOX = json.load(f)
 PRESETS = SANDBOX["presets"]
+# Fitur preset tetap, jadi probabilitasnya cukup dihitung sekali agar slider terasa responsif
+PRESET_PROB = {key: engine.predict_probability(p["features"]) for key, p in PRESETS.items()}
 
 
 def model_info():
@@ -70,10 +73,10 @@ def predict():
 
         # Tier 2: gabungkan mapel yang sedang dicoba dengan mapel lain dari preset berbeda
         courses_data = [{"course": course_info, "features": features, "probability": prob}]
-        for other in PRESETS.values():
+        for key, other in PRESETS.items():
             if other["course"]["code_module"] != course_info["code_module"]:
                 courses_data.append({"course": other["course"], "features": other["features"],
-                                     "probability": engine.predict_probability(other["features"])})
+                                     "probability": PRESET_PROB[key]})
         tier2_payload = engine.generate_bk_student_summary(student_id=student_id, courses_data=courses_data)
 
         return jsonify({
@@ -107,7 +110,7 @@ def main():
     print("=" * 70)
     print(f"-> Model utama      : {engine.model_path} (v{engine.model_version})")
     print(f"-> Ambang           : SEDANG >= {engine.threshold}, TINGGI >= {engine.threshold_tinggi}")
-    print(f"-> Preset           : {len(PRESETS)} profil siswa asli (anonim)")
+    print(f"-> Preset           : {len(PRESETS)} profil contoh per level risiko")
     print(f"-> Dashboard URL    : http://{args.host}:{args.port}")
     print("=" * 70 + "\n")
 

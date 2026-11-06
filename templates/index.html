@@ -702,6 +702,11 @@
             updateSliderDisplay('is_inactive_gt_5d', currentFeatures['is_inactive_gt_5d']);
             updateSliderDisplay('is_inactive_gt_14d', currentFeatures['is_inactive_gt_14d']);
           }
+          if (feat === 'total_clicks' || feat === 'active_days') {
+            const days = currentFeatures['active_days'];
+            currentFeatures['clicks_per_active_day'] = days > 0 ? Math.round(currentFeatures['total_clicks'] / days * 1000) / 1000 : 0;
+            updateSliderDisplay('clicks_per_active_day', currentFeatures['clicks_per_active_day']);
+          }
           debouncePredict();
         });
       });
@@ -733,7 +738,7 @@
     function showPresetDesc() {
       const p = presetsData[currentPreset];
       document.getElementById('presetDesc').innerText =
-        `${p.description} Contoh nyata (nama disamarkan) di mapel ${p.course.nama_mapel}, mewakili ${p.kelompok_n} data siswa per mapel dengan pola serupa.`;
+        `${p.description} Profil contoh untuk menguji model (bukan siswa nyata), dihitung sebagai mapel ${p.course.nama_mapel}.`;
     }
 
     let debounceTimer;
@@ -742,7 +747,9 @@
       debounceTimer = setTimeout(requestPredict, 120);
     }
 
+    let latestRequest = 0;
     async function requestPredict() {
+      const requestId = ++latestRequest;
       try {
         const resp = await fetch('/api/predict', {
           method: 'POST',
@@ -750,6 +757,7 @@
           body: JSON.stringify({ student_id: 900001, preset: currentPreset, features: currentFeatures })
         });
         const data = await resp.json();
+        if (requestId !== latestRequest) return; // abaikan jawaban lama saat slider digeser cepat
         lastPayload = data;
         updateDashboard(data);
       } catch (err) {

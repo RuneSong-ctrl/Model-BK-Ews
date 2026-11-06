@@ -3,7 +3,7 @@
   "versi": "2.1.0",
   "tanggal_latih": "2026-11-03",
   "berkas_model": "ews_kokar_model.pkl",
-  "dataset": "Dump database Moodle SMK Negeri 3 Sukawati (Kokar Bali), semester ganjil 2026/2027",
+  "dataset": "Dump database Moodle Pelanggan JKS, semester ganjil 2026/2027",
   "periode_log": "6 Juli - 29 Oktober 2026 (semester belum selesai)",
   "cut_off_hari": 45,
   "hari_ke_0": "mdl_course.startdate (umumnya 23 Juli 2026)",
@@ -16,9 +16,7 @@
     "RENDAH": "p < 0.8"
   },
   "prioritas_bk_tinggi": ">= 2 mapel berisiko dan >= 75% mapel berstatus TINGGI",
-  "fitur_konstan": [
-    "num_of_prev_attempts (tidak tercatat di Moodle)"
-  ],
+  "fitur_konstan": ["num_of_prev_attempts (tidak tercatat di Moodle)"],
   "evaluasi": {
     "A": {
       "skenario": "A - hari ke-45, label nilai sementara",
